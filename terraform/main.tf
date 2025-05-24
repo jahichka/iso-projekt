@@ -256,8 +256,8 @@ resource "aws_lb_target_group" "frontend" {
     path                = "/"
     port                = "traffic-port"
     protocol            = "HTTP"
-    timeout             = 5
-    unhealthy_threshold = 2
+    timeout             = 10
+    unhealthy_threshold = 3
   }
   
   tags = {
@@ -279,8 +279,8 @@ resource "aws_lb_target_group" "backend" {
     path                = "/health"
     port                = "traffic-port"
     protocol            = "HTTP"
-    timeout             = 5
-    unhealthy_threshold = 2
+    timeout             = 10
+    unhealthy_threshold = 3
   }
   
   tags = {
@@ -309,7 +309,12 @@ resource "aws_lb_listener" "main" {
   
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.frontend.arn
+    
+    forward {
+      target_group {
+        arn = aws_lb_target_group.frontend.arn
+      }
+    }
   }
 }
 
@@ -318,8 +323,13 @@ resource "aws_lb_listener_rule" "api" {
   priority     = 100
   
   action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.backend.arn
+    type = "forward"
+    
+    forward {
+      target_group {
+        arn = aws_lb_target_group.backend.arn
+      }
+    }
   }
   
   condition {

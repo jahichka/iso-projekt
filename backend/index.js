@@ -6,9 +6,14 @@ const notesRoutes = require('./routes/notes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/noteapp';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://mongodb:27017/noteapp';
 
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 app.use('/api/notes', notesRoutes);
@@ -17,7 +22,15 @@ app.get('/health', (req, res) => {
   res.status(200).json({ 
     status: 'ok',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
+});
+
+app.get('/', (req, res) => {
+  res.status(200).json({ 
+    message: 'Notes App Backend is running',
+    status: 'healthy'
   });
 });
 
